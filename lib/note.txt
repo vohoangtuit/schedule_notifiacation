@@ -1,0 +1,23 @@
+
+1// nếu có thay đổi api_provider.dart thì run comment line để update api_provider.g.dart
+- export PATH="/Users/vohoangtuit/DATA/DEVELOP/AndroidStudio/flutter_sdk/flutter/bin:$PATH" // change path
+- export PATH="/Users/tuvh/DATA/sdk/flutter/bin:$PATH"
+
+// todo: cd /Users/tuvh/DATA/VIETRAVEL/App/GuideBook/app_guidebook
+todo update file pub
+> flutter clean
+> flutter pub get
+> cd ios
+> pod update || pod install // todo if error run:  'pod deintegrate' before
+
+- flutter pub run build_runner build // todo api
+- dart run build_runner build // todo drift db
+
+/// flutter run --release
+/// flutter run --profile
+
+2/ update flutter sdk
+Swich sdk
+> flutter channel stable // todo branch stable
+> flutter flutter channel beta // todo branch beta
+> flutter upgrade
