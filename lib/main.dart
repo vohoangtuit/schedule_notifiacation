@@ -1,3 +1,4 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:demo_local_notification/notification/notification_service.dart';
 import 'package:demo_local_notification/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 void main() async{
 
   WidgetsFlutterBinding.ensureInitialized();
+  await AndroidAlarmManager.initialize();
   await NotificationService.init();
   runApp( MyApp());
 }

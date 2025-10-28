@@ -1,10 +1,23 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 class NotificationService {
+  static String dailyMorningId='daily_morning_id';
+  static String dailyMorningName='Thông báo buổi sáng';
+  static String titleMorning='Have a nice day';
+  static String bodyMorning='Tới giờ đi làm';
+
+
+  static String dailyEveningId='daily_evening_id';
+  static String dailyEveningName='Thông báo buổi tối';
+  static String titleEvening='Good evening';
+  static String bodyEvening='Bạn đã về đến nhà chưa!';
+
   // Khởi tạo plugin
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
@@ -54,6 +67,172 @@ class NotificationService {
     }
     //checkPending();
   }
+  static Future<void> setupSchedule()async{
+    if(Platform.isAndroid){
+     await androidSetupMorning();
+     await androidSetupEvening();
+    }else if(Platform.isIOS){
+      await scheduleIOSDailyMorning();
+      await scheduleIOSDailyEvening();
+    }
+  }
+  //  todo --for android----------------------------
+  static Future<void> androidSetupMorning() async {
+    await AndroidAlarmManager.initialize();
+    tz.TZDateTime scheduledDate = await getTimeSchedule(true);
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await AndroidAlarmManager.periodic(
+      const Duration(days: 1),
+      id,
+      androidShowNotificationMorning,
+      startAt: scheduledDate,
+      wakeup: true,
+      rescheduleOnReboot: true,
+    );
+
+  }
+ static void androidShowNotificationMorning() async {
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      dailyMorningId,
+      dailyMorningName,
+      channelDescription: 'Thông báo hằng ngày',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      titleMorning,
+      bodyMorning,
+       NotificationDetails(android: androidDetails),
+    );
+  }
+  static Future<void> androidSetupEvening() async {
+    await AndroidAlarmManager.initialize();
+    tz.TZDateTime scheduledDate = await getTimeSchedule(false);
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await AndroidAlarmManager.periodic(
+      const Duration(days: 1),
+      id,
+      androidShowNotificationEvening,
+      startAt: scheduledDate,
+      wakeup: true,
+      rescheduleOnReboot: true,
+    );
+
+  }
+  static void androidShowNotificationEvening() async {
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      dailyEveningId,
+      dailyEveningName,
+      channelDescription: 'Thông báo hằng ngày',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      titleEvening,
+      bodyEvening,
+      NotificationDetails(android: androidDetails),
+    );
+  }
+  //  todo --done android----------------------------
+  //------------------------------------
+  // todo --for ios----------------------------
+  static Future<void> scheduleIOSDailyMorning() async {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+
+    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 07,20);
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    NotificationDetails  notificationDetails = NotificationDetails(
+      // android: AndroidNotificationDetails(
+      //   dailyMorningId, // ID của Channel
+      //   dailyMorningName, // Tên Channel
+      //   importance: Importance.max,
+      //   priority: Priority.high,
+      // ),
+      iOS: DarwinNotificationDetails(
+        presentBadge: true,
+        presentAlert: true, // ✅ BẮT BUỘC để hiện alert
+        presentSound: true, // ✅ BẮT BUỘC để phát âm báo
+      ),
+    );
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    debugPrint("id =$id");
+    // 3. Lên lịch thông báo
+    await _notificationsPlugin.zonedSchedule(
+      id, // ID của thông báo
+      titleMorning,
+      bodyMorning,
+      scheduledDate, // Thời gian (TZDateTime)
+      notificationDetails,
+
+      // Quan trọng: Báo cho Android chạy nền
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,// 🔁 Lặp lại mỗi ngày cùng giờ
+    );
+  }
+
+  static Future<void> scheduleIOSDailyEvening() async {
+    // 1. Tính toán thời gian 18:00 tiếp theo
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 18,10); // 18 giờ
+
+    // 2. Định nghĩa nội dung thông báo
+    const NotificationDetails notificationDetails = NotificationDetails(
+        // android: AndroidNotificationDetails(
+        //   'daily_18pm_channel_id', // ID của Channel
+        //   'daily_18pm_channel_id', // Tên Channel
+        //   importance: Importance.max,
+        //   priority: Priority.high,
+        //   playSound: true,
+        //   showWhen: true,
+        //   enableLights: true,
+        //   color: Colors.blue,
+        //   ledColor: Colors.blue,
+        //   ledOnMs: 1000,
+        //   ledOffMs: 500,
+        //   autoCancel: true,
+        // ),
+        iOS: DarwinNotificationDetails( presentBadge: true,
+          presentAlert: true, // ✅ BẮT BUỘC để hiện alert
+          presentSound: true, // ✅ BẮT BUỘC để phát âm báo),
+        ));
+    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    debugPrint("id: =$id");
+    // 3. Lên lịch thông báo
+    await _notificationsPlugin.zonedSchedule(
+      id, // ID của thông báo
+      titleEvening,
+      bodyEvening,
+      scheduledDate, // Thời gian (TZDateTime)
+      notificationDetails,
+
+      // Quan trọng: Báo cho Android chạy nền
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,// 🔁 Lặp lại mỗi ngày cùng giờ
+    );
+  }
+
+  //todo --done ios----------------------------
+  static Future<tz.TZDateTime> getTimeSchedule(bool morning)async{
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime? scheduledDate ;
+    if(morning){
+      scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 7,20);
+    }else{
+      scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 18,10);
+    }
+    return scheduledDate;
+  }
+  //--------------------
   static Future<void> checkPending()async{
     final pending = await _notificationsPlugin.pendingNotificationRequests();
     debugPrint("⏱ Đang có ${pending.length} notification đang chờ");
@@ -150,85 +329,6 @@ class NotificationService {
     );
   }
 
-  static Future<void> scheduleDailyMorning() async {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-
-      tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 07,20);
-
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'daily_7Am_channel_id', // ID của Channel
-        'daily_7Am_channel_id', // Tên Channel
-        importance: Importance.max,
-        priority: Priority.high,
-      ),
-      iOS: DarwinNotificationDetails(
-        presentBadge: true,
-        presentAlert: true, // ✅ BẮT BUỘC để hiện alert
-        presentSound: true, // ✅ BẮT BUỘC để phát âm báo
-      ),
-    );
-    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    debugPrint("id =$id");
-    // 3. Lên lịch thông báo
-    await _notificationsPlugin.zonedSchedule(
-      id, // ID của thông báo
-      'Have a nice day',
-      'Tới giờ đi làm',
-      scheduledDate, // Thời gian (TZDateTime)
-      notificationDetails,
-
-      // Quan trọng: Báo cho Android chạy nền
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,// 🔁 Lặp lại mỗi ngày cùng giờ
-    );
-  }
-
-  static Future<void> scheduleDailyEvening() async {
-    // 1. Tính toán thời gian 18:00 tiếp theo
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 18,10); // 18 giờ
-
-    // 2. Định nghĩa nội dung thông báo
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'daily_18pm_channel_id', // ID của Channel
-        'daily_18pm_channel_id', // Tên Channel
-        importance: Importance.max,
-        priority: Priority.high,
-        playSound: true,
-        showWhen: true,
-        enableLights: true,
-        color: Colors.blue,
-        ledColor: Colors.blue,
-        ledOnMs: 1000,
-        ledOffMs: 500,
-        autoCancel: true,
-      ),
-      iOS: DarwinNotificationDetails( presentBadge: true,
-        presentAlert: true, // ✅ BẮT BUỘC để hiện alert
-        presentSound: true, // ✅ BẮT BUỘC để phát âm báo),
-    ));
-    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    debugPrint("id: =$id");
-    // 3. Lên lịch thông báo
-    await _notificationsPlugin.zonedSchedule(
-      id, // ID của thông báo
-      'Good evening',
-      'Bạn đã về đến nhà chưa!',
-      scheduledDate, // Thời gian (TZDateTime)
-      notificationDetails,
-
-      // Quan trọng: Báo cho Android chạy nền
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,// 🔁 Lặp lại mỗi ngày cùng giờ
-    );
-  }
-
 
   // (Tùy chọn) Hủy thông báo
   static Future<void> cancelNotification(int id) async {
@@ -239,5 +339,3 @@ class NotificationService {
     await _notificationsPlugin.cancelAll();
   }
 }
-// I/flutter ( 3636): id =40516
-// I/flutter ( 3636): id: =40553

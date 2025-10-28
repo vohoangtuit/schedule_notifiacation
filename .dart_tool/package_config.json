@@ -14,6 +14,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "android_alarm_manager_plus",
+      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/android_alarm_manager_plus-5.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "args",
       "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/args-2.7.0",
       "packageUri": "lib/",
@@ -51,7 +57,7 @@
     },
     {
       "name": "build_runner",
-      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/build_runner-2.10.0",
+      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/build_runner-2.10.1",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -210,12 +216,6 @@
       "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-1.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.4"
-    },
-    {
-      "name": "flutter_riverpod",
-      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/flutter_riverpod-3.0.0-dev.3",
-      "packageUri": "lib/",
-      "languageVersion": "3.0"
     },
     {
       "name": "flutter_test",
@@ -422,12 +422,6 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "riverpod",
-      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/riverpod-3.0.0-dev.3",
-      "packageUri": "lib/",
-      "languageVersion": "3.0"
-    },
-    {
       "name": "shelf",
       "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/shelf-1.4.2",
       "packageUri": "lib/",
@@ -474,12 +468,6 @@
       "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/stack_trace-1.12.1",
       "packageUri": "lib/",
       "languageVersion": "3.4"
-    },
-    {
-      "name": "state_notifier",
-      "rootUri": "file:///Users/tuvh/.pub-cache/hosted/pub.dev/state_notifier-1.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "stream_channel",

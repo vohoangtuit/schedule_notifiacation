@@ -41,11 +41,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   void _setup()async{
     await NotificationService.cancelNotificationAll();
+    await NotificationService.setupSchedule();
+    _init();
+
+
+    // await NotificationService.scheduleIOSDailyMorning();
+    // await NotificationService.scheduleIOSDailyEvening();
    // await NotificationService.scheduleRepeatEvery5Minutes();
     //await NotificationService.scheduleEveryHour();
    // await NotificationService.showNow();
-     await NotificationService.scheduleDailyMorning();
-     await NotificationService.scheduleDailyEvening();
+
    // showToast("Đã lên lịch thông báo 1");
      //  NotificationService.checkPending();
   }
