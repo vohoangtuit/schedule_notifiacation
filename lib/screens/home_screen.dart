@@ -40,9 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
      await NotificationService.checkPending();
   }
   void _setup()async{
-    await NotificationService.cancelNotificationAll();
+
     await NotificationService.setupSchedule();
-    _init();
+  //  _init();
 
 
     // await NotificationService.scheduleIOSDailyMorning();

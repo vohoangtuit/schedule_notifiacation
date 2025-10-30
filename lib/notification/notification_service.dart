@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,12 @@ class NotificationService {
   static String titleEvening='Good evening';
   static String bodyEvening='Bạn đã về đến nhà chưa!';
 
+
+  // Android Alarm IDs là duy nhất trong app
+
+  static int androidMorningId=1001;
+  static int androidEveningId=1002;
+  static int androidTestId=1003;
   // Khởi tạo plugin
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
@@ -69,22 +74,41 @@ class NotificationService {
   }
   static Future<void> setupSchedule()async{
     if(Platform.isAndroid){
-     await androidSetupMorning();
-     await androidSetupEvening();
+
+     //await testAndroid();
+      await androidSetupMorning();
+      await androidSetupEvening();
     }else if(Platform.isIOS){
+      await NotificationService.cancelNotificationAll();
       await scheduleIOSDailyMorning();
       await scheduleIOSDailyEvening();
     }
   }
   //  todo --for android----------------------------
-  static Future<void> androidSetupMorning() async {
-    await AndroidAlarmManager.initialize();
-    tz.TZDateTime scheduledDate = await getTimeSchedule(true);
-    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+  static Future<void> testAndroid()async{
+    await AndroidAlarmManager.cancel(androidTestId);
+   // await AndroidAlarmManager.initialize();
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+
+    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 14,40);
+    //int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
     await AndroidAlarmManager.periodic(
       const Duration(days: 1),
-      id,
-      androidShowNotificationMorning,
+      1003,
+      showAndroidTestAlarm,
+      startAt: scheduledDate,
+      wakeup: true,
+      rescheduleOnReboot: true,
+    );
+  }
+  static Future<void> androidSetupMorning() async {
+    await AndroidAlarmManager.cancel(androidMorningId);
+    tz.TZDateTime scheduledDate = await getTimeSchedule(true);
+    //int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await AndroidAlarmManager.periodic(
+      const Duration(days: 1),
+      androidMorningId,
+      showMorningAlarm,// androidShowNotificationMorning,/
       startAt: scheduledDate,
       wakeup: true,
       rescheduleOnReboot: true,
@@ -109,13 +133,12 @@ class NotificationService {
     );
   }
   static Future<void> androidSetupEvening() async {
-    await AndroidAlarmManager.initialize();
     tz.TZDateTime scheduledDate = await getTimeSchedule(false);
-    int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    await AndroidAlarmManager.cancel(androidEveningId);
     await AndroidAlarmManager.periodic(
       const Duration(days: 1),
-      id,
-      androidShowNotificationEvening,
+      androidEveningId,
+      showEveningAlarm, // androidShowNotificationEvening,
       startAt: scheduledDate,
       wakeup: true,
       rescheduleOnReboot: true,
@@ -338,4 +361,79 @@ class NotificationService {
   static Future<void> cancelNotificationAll() async {
     await _notificationsPlugin.cancelAll();
   }
+}
+// todo phải đặc ngoài class mới chạy được trên android background
+@pragma('vm:entry-point')
+void showAndroidTestAlarm() async {
+  final FlutterLocalNotificationsPlugin plugin = FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initSettings = InitializationSettings(android: androidInit);
+  await plugin.initialize(initSettings);
+
+  const androidDetails = AndroidNotificationDetails(
+    'test_id',
+    'Thông báo Test',
+    channelDescription: 'Thông báo Test',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+  final id = DateTime.now().millisecondsSinceEpoch.remainder(100000); // tạo id ngẫu nhiên
+  await plugin.show(
+    id,
+    'Test Alarm',
+    'Đã hiện thị thông báo test alarm',
+    const NotificationDetails(android: androidDetails),
+  );
+
+  print("🔥 Test alarm triggered at ${DateTime.now()}");
+}
+
+@pragma('vm:entry-point')
+void showMorningAlarm() async {
+  final FlutterLocalNotificationsPlugin plugin = FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initSettings = InitializationSettings(android: androidInit);
+  await plugin.initialize(initSettings);
+
+  const androidDetails = AndroidNotificationDetails(
+    'daily_morning_id',
+    'Thông báo buổi sáng',
+    channelDescription: 'Thông báo buổi sáng',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+  final id = DateTime.now().millisecondsSinceEpoch.remainder(100000); // tạo id ngẫu nhiên
+  await plugin.show(
+    id,
+    'Have a nice day',
+    'Tới giờ đi làm',
+    const NotificationDetails(android: androidDetails),
+  );
+
+  print("🔥 Morning alarm triggered at ${DateTime.now()}");
+}
+
+@pragma('vm:entry-point')
+void showEveningAlarm() async {
+  final FlutterLocalNotificationsPlugin plugin = FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initSettings = InitializationSettings(android: androidInit);
+  await plugin.initialize(initSettings);
+
+  const androidDetails = AndroidNotificationDetails(
+    'daily_evening_id',
+    'Thông báo buổi tối',
+    channelDescription: 'Thông báo buổi tối',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+  final id = DateTime.now().millisecondsSinceEpoch.remainder(100000); // tạo id ngẫu nhiên
+  await plugin.show(
+    id,
+    'Good evening',
+    'Bạn đã về đến nhà chưa!',
+    const NotificationDetails(android: androidDetails),
+  );
+
+  print("🔥 Evening alarm triggered at ${DateTime.now()}");
 }
